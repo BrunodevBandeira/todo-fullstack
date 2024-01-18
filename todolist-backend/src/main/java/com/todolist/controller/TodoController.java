@@ -46,6 +46,7 @@ public class TodoController {
 
     @DeleteMapping("/{id}")
     List<Todo> delete(@PathVariable("id") Long id) {
+        System.out.println("Dell ===> " + id);
         return todoService.delete(id);
     }
 

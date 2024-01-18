@@ -19,8 +19,8 @@ public class TodoService {
 
 
     public List<Todo> create(Todo todo) {
-        todoRepository.save(todo);
-        return list();
+        return (List<Todo>) todoRepository.save(todo);
+        // return list();
     }
 
     //principio DRY => Do not, repeat, youu are self

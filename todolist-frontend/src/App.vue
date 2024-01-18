@@ -4,7 +4,7 @@
 			<h1>Tasks app</h1>
 			<!-- {{  tasksModel  }} -->
  			<!-- Adding a task -->
-			<Vueform size="lg" :endpoint="createTask">
+			<Vueform size="lg" :endpoint="createTask"  >
 
 				<TextElement
 					name="nameTask"
@@ -58,17 +58,19 @@
 					@sort="syncToStorage"
 					@remove="syncToStorage"
 				>
-					<template #default="{ index }">
+					<template #default="{ index }" >
 
 						<!-- Task wrapper -->
 						<ObjectElement
-							:name="index"
-							:add-class="[
-								'task-container',
-								tasksModel.tasks[index].type === 'Personal' ? 'is-personal' : 'is-business'
-							]">
-
-						<!-- Edit button, using the task name with index as label - only visible when not editing -->
+						:name="index"
+						:add-class="[
+							'task-container',
+							tasksModel.tasks[index].type === 'Personal' ? 'is-personal' : 'is-business'
+						]"
+						
+						>
+						
+						<!-- Edit -->
 						<ButtonElement
 							:label="`#${index + 1} - Name: ${tasksModel.tasks[index].nameTask} - Task: ${tasksModel.tasks[index].task}`"
 							name="edit"
@@ -81,8 +83,23 @@
 							}"
 							@click="edit(index)"  
 							>
-							<!-- @click="sendToBackend()"   -->
 							Edit
+						</ButtonElement>
+
+						<!-- Delete -->
+						<ButtonElement
+							name="delete"
+							align="right"
+							:danger="true"
+							:conditions="[
+								['editing', index]
+							]"
+							:columns="{
+								label: 5,
+							}"
+							@click="dell(index)"  
+							>
+							Delete
 						</ButtonElement>
 
 						<!-- <p style="margin-top: .4rem;">Nome</p> -->
@@ -143,18 +160,22 @@
 							]"
 							:columns="2"
 							full
-							@click="save"
+							@click="save(index)"
 						>
 							Save
 						</ButtonElement>
 
 						</ObjectElement>
+
 					</template>
+
 				</ListElement>
 
 				<!-- Store which field we're editing so that conditions can rely on this -->
 				<HiddenElement name="editing" />
 			</Vueform>
+
+
 		</div>
 	</div>
 </template>
@@ -171,7 +192,6 @@ const api = configurarAPI(); // Chamar a função configurarAPI para obter o obj
 const tasksModel = ref({
 	tasks: [], // list of tasks
 	editing: null, // current task we're editing
- 
 })
 
 const taskDates = ref({
@@ -183,16 +203,10 @@ const taskDates = ref({
 const createTask = async (data, form$) => {
 	taskDates.value.nameTask = form$.data.nameTask;
 	taskDates.value.task = form$.data.task;
-
 	await postRequest(taskDates.value);
-
-	addToStorage(form$.data) // first add to localStorage
-
-	syncFromStorage() // then sync the `tasksModel` from localStorage
-
-	form$.reset() // then reset the form
-	// form$.clear() // This is used to completely wipe the form instead of resetting
-
+	addToStorage(form$.data) 
+	syncFromStorage() 
+	form$.reset() 
 }
 
 const postRequest = async (sendPostData) => {
@@ -206,16 +220,6 @@ const postRequest = async (sendPostData) => {
 	}
 }
 
-
-// // Function to send data to the backend
-// const sendToBackend = async () => {
-// 	try {
-// 		let get = await api.getDados(); // Acessar a função getDados através do objeto retornado por configurarAPI
-// 		console.log("getDados => ", get);
-// 	} catch (error) {
-// 		console.error("Erro ao chamar getDados:", error);
-// 	}
-// };
 
 
 // Adds a new task to the localStorage
@@ -232,8 +236,6 @@ const addToStorage = (data) => {
     console.log("addToStorage - show", localStorage.getItem('tasks'));
 };
 
- 
-
 // Syncs the localStorage to `tasksModel`
 const syncFromStorage = () => {
 	let tasks = localStorage.getItem('tasks')
@@ -248,27 +250,75 @@ const syncFromStorage = () => {
 
 // Syncs the `tasksModel.tasks` to localStorage
 const syncToStorage = () => {
-
 	localStorage.setItem('tasks', JSON.stringify(tasksModel.value.tasks))
 }
 
 // Sets the tasks to edit
 const edit = (index) => {
-	console.log("edit - tasksModel.value", tasksModel.value)
+	console.log("edit - tasksModel.value", tasksModel.value.tasks)
 	tasksModel.value.editing = index
+}
+
+const dell = async (index) => {
+	console.log("click - index", index)
+	await dellPost(index);
+}
+
+const dellPost = async (index) => {
+	try {
+		const resposta = await api.deletePost(index); 
+		console.log("click 00002 ", resposta)
+
+	} catch (error) {
+		console.error("Erro ao chamar dellPost:", error);
+	}
+	
 }
 
 // Cancels the task to editing
 const cancel = (index) => {
+	console.log("cancel - index", index)
 	tasksModel.value.editing = null
 	syncFromStorage()
 }
 
 // Saves the task
-const save = () => {
-	syncToStorage()
+const save = async (index) => {
+	
+	let obj = {
+		nameTask: "",
+		task: ""
+	}
+	
+    tasksModel.value.tasks.map((task, i) => {
+		if (i === index) {
+			obj.nameTask = task.nameTask
+			obj.task = task.task
+        }
+        return task;
+    });
 
-	tasksModel.value.editing = null
+	console.log("objobj", obj)
+
+	await putRequest(obj);
+
+	syncToStorage();
+
+	tasksModel.value.editing = null;
+
+    console.log("save - updatedTasks", tasksModel.value.tasks);
+};
+
+
+const putRequest = async (sendPutData) => {
+	console.log("sendPutRequest 00001 ", sendPutData)
+	try {
+		const resposta = await api.sendPutRequest(sendPutData); 
+		console.log("sendPutRequest 00002 ", resposta)
+
+	} catch (error) {
+		console.error("Erro ao chamar enviarDados:", error);
+	}
 }
 
 // Sync the `tasksModel` from localStorage upon pageload

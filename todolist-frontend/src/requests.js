@@ -1,11 +1,9 @@
-// requests.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/todos';
 
-// Função para configurar e retornar as funções de requisição
 const configurarAPI = () => {
-  // Função para realizar uma requisição GET
+
   const getDados = async () => {
     try {
       const response = await axios.get(`${API_URL}`);
@@ -15,7 +13,6 @@ const configurarAPI = () => {
       return response.data;
 
     } catch (error) {
-      // Trate o erro conforme necessário
       console.error('Erro na requisição GET:', error);
 
       console.log('getDados error', response.data);
@@ -23,7 +20,6 @@ const configurarAPI = () => {
     }
   };
 
-  // Função para realizar uma requisição POST
   const sendPostRequest = async ( dados) => {
     console.log('sendPostRequest - dados:', dados);
     let obj = {
@@ -42,19 +38,60 @@ const configurarAPI = () => {
 
       return response.data;
     } catch (error) {
-      // Trate o erro conforme necessário
       console.error('Erro na requisição POST:', error);
       throw error;
     }
   };
 
-  // Outras funções conforme necessário
+  const sendPutRequest = async ( dados) => {
+    console.log('sendPutRequest - dados:', dados);
 
-  // Retornar as funções que deseja exportar
+    let obj = {
+      nome: dados.nameTask,
+      descricao: dados.task
+    }
+
+    console.log('sendPutRequest - obj:', obj);
+
+    try {
+      const response = await axios.put(`${API_URL}`, obj, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('sendPutRequest - response:', response);
+      console.log('sendPutRequest - response.data:', response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error('Erro na requisição PUT:', error);
+      throw error;
+    }
+  };
+
+
+  const deletePost = async (id) => {
+    console.log('dellPost - id:', id);
+
+    try {
+      const response = await axios.delete(`${API_URL}/${id}`);
+
+      console.log('dellPost - response:', response);
+      console.log('dellPost - response.data:', response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error('Erro na requisição Dell:', error);
+      throw error;
+    }
+  };
+
   return {
     getDados,
     sendPostRequest,
-    // Outras funções conforme necessário
+    sendPutRequest,
+    deletePost
   };
 };
 
