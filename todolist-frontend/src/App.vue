@@ -182,7 +182,6 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import axios from 'axios';
 // import requests from "./requests.js";
 import configurarAPI from "./requests.js"; // Importar a função configurarAPI
 
@@ -210,10 +209,10 @@ const createTask = async (data, form$) => {
 }
 
 const postRequest = async (sendPostData) => {
-	console.log("sendPostRequest 00001 ", sendPostData)
+	console.log("postRequest 00001 ", sendPostData)
 	try {
 		const resposta = await api.sendPostRequest(sendPostData); 
-		console.log("sendPostRequest 00002 ", resposta)
+		console.log("postRequest 00002 ", resposta)
 
 	} catch (error) {
 		console.error("Erro ao chamar enviarDados:", error);
@@ -266,7 +265,7 @@ const dell = async (index) => {
 
 const dellPost = async (index) => {
 	try {
-		const resposta = await api.deletePost(index); 
+		const resposta = await api.deletePost(index + 1); 
 		console.log("click 00002 ", resposta)
 
 	} catch (error) {
@@ -320,6 +319,10 @@ const putRequest = async (sendPutData) => {
 		console.error("Erro ao chamar enviarDados:", error);
 	}
 }
+
+// const check = async() {
+	
+// }
 
 // Sync the `tasksModel` from localStorage upon pageload
 onMounted(() => {
